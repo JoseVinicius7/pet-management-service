@@ -32,3 +32,45 @@ public class PetServiceImpl implements PetService {
                 .map(this::convertToDTO)
                 .toList();
     }
+
+    @Override
+    public PetDTO addPet(PetDTO petDTO) {
+        log.info("Adding a new pet: {}", petDTO);
+        validatePetDTO(petDTO);
+        PetEntity pet = createPetEntity(petDTO);
+        PetEntity savedPet = petRepository.save(pet);
+        log.info("Pet saved successfully with ID: {}", savedPet.getId());
+        return convertToDTO(savedPet);
+    }
+
+    private void validatePetDTO(PetDTO petDTO) {
+        if (petDTO.getName() == null || petDTO.getName().isEmpty()) {
+            log.error("Validation failed: Pet name is required.");
+            throw new IllegalArgumentException("O nome do pet é obrigatório.");
+        }
+        if (petDTO.getBreed() == null || petDTO.getBreed().isEmpty()) {
+            log.error("Validation failed: Pet breed is required.");
+            throw new IllegalArgumentException("A raça do pet é obrigatória.");
+        }
+        log.info("Validation passed for pet: {}", petDTO);
+    }
+
+    private PetEntity createPetEntity(PetDTO petDTO) {
+        return PetEntity.builder()
+                .name(petDTO.getName())
+                .breed(petDTO.getBreed())
+                .age(petDTO.getAge())
+                .additionalInfo(petDTO.getAdditionalInfo())
+                .build();
+    }
+
+    private PetDTO convertToDTO(PetEntity savedPet) {
+        PetDTO responsePetDTO = new PetDTO();
+        responsePetDTO.setId(String.valueOf(savedPet.getId()));
+        responsePetDTO.setName(savedPet.getName());
+        responsePetDTO.setBreed(savedPet.getBreed());
+        responsePetDTO.setAge(savedPet.getAge());
+        responsePetDTO.setAdditionalInfo(savedPet.getAdditionalInfo());
+        return responsePetDTO;
+    }
+}

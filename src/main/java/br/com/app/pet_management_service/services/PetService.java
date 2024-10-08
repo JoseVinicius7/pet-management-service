@@ -7,3 +7,6 @@ import java.util.List;
 public interface PetService {
 
     List<PetDTO> getPets();
+
+    PetDTO addPet(PetDTO body);
+}

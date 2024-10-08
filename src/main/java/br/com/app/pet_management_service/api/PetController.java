@@ -41,3 +41,11 @@ public class PetController implements PetsApi {
     public ResponseEntity<PetDTO> petsIdPut(PetDTO body, String id) {
         return null;
     }
+
+    @Override
+    public ResponseEntity<PetDTO> petsPost(@RequestBody @Valid PetDTO body) {
+        PetDTO response = petService.addPet(body);
+
+        return ResponseEntity.ok(response);
+    }
+}
