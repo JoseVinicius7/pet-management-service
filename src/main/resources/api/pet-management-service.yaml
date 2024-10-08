@@ -11,6 +11,8 @@ paths:
   /pets:
     get:
       summary: "Listar todos os pets"
+      tags:
+        - Pet
       responses:
         '200':
           description: "Lista de pets retornada com sucesso."
@@ -22,6 +24,8 @@ paths:
                   $ref: '#/components/schemas/Pet'
     post:
       summary: "Cadastrar um novo pet"
+      tags:
+        - Pet
       requestBody:
         required: true
         content:
@@ -35,10 +39,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
-  
+
   /pets/{id}:
     get:
       summary: "Obter detalhes de um pet específico"
+      tags:
+        - Pet
       parameters:
         - in: path
           name: id
@@ -57,6 +63,8 @@ paths:
           description: "Pet não encontrado."
     put:
       summary: "Atualizar informações de um pet"
+      tags:
+        - Pet
       parameters:
         - in: path
           name: id
@@ -81,6 +89,8 @@ paths:
           description: "Pet não encontrado."
     delete:
       summary: "Deletar um pet"
+      tags:
+        - Pet
       parameters:
         - in: path
           name: id
@@ -93,57 +103,6 @@ paths:
           description: "Pet deletado com sucesso."
         '404':
           description: "Pet não encontrado."
-
-  /appointments:
-    post:
-      summary: "Agendar um serviço para um pet"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Appointment'
-      responses:
-        '201':
-          description: "Agendamento criado com sucesso."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-  
-  /appointments/{id}:
-    get:
-      summary: "Obter detalhes de um agendamento específico"
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: "ID do agendamento que será retornado."
-      responses:
-        '200':
-          description: "Agendamento encontrado."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '404':
-          description: "Agendamento não encontrado."
-    delete:
-      summary: "Cancelar um agendamento"
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: "ID do agendamento que será cancelado."
-      responses:
-        '204':
-          description: "Agendamento cancelado com sucesso."
-        '404':
-          description: "Agendamento não encontrado."
 
 components:
   schemas:
@@ -165,23 +124,3 @@ components:
         additionalInfo:
           type: string
           description: "Informações adicionais sobre o pet."
-
-    Appointment:
-      type: object
-      properties:
-        id:
-          type: string
-          description: "ID do agendamento."
-        petId:
-          type: string
-          description: "ID do pet relacionado ao agendamento."
-        service:
-          type: string
-          description: "Serviço agendado (ex: banho, tosa)."
-        appointmentDate:
-          type: string
-          format: date-time
-          description: "Data e hora do agendamento."
-        status:
-          type: string
-          description: "Status do agendamento (ex: agendado, cancelado)."
