@@ -2,12 +2,15 @@ package br.com.app.pet_management_service.services.impl;
 
 import br.com.app.pet_management_service.api.model.PetDTO;
 import br.com.app.pet_management_service.entities.PetEntity;
+import br.com.app.pet_management_service.exceptions.PayloadValidationException;
+import br.com.app.pet_management_service.exceptions.PetNotFoundException; // Nova exceção
 import br.com.app.pet_management_service.repository.PetRepository;
 import br.com.app.pet_management_service.services.PetService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -20,6 +23,23 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    public void deletePet(String id) {
+        log.debug("Deleting pet with ID: {}", id);
+        PetEntity pet = petRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new PetNotFoundException("Pet não encontrado com ID: " + id));
+        petRepository.delete(pet);
+        log.info("Pet deleted successfully with ID: {}", id);
+    }
+
+    @Override
+    public PetDTO getPetById(String id) {
+        log.debug("Fetching pet with ID: {}", id);
+        PetEntity pet = petRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new PetNotFoundException("Pet não encontrado com ID: " + id));
+        return convertToDTO(pet);
+    }
+
+    @Override
     public List<PetDTO> getPets() {
         log.info("Fetching all pets from the repository.");
         List<PetEntity> petEntityList = petRepository.findAll();
@@ -27,15 +47,9 @@ public class PetServiceImpl implements PetService {
         return convertToDTOs(petEntityList);
     }
 
-    private List<PetDTO> convertToDTOs(List<PetEntity> petEntities) {
-        return petEntities.stream()
-                .map(this::convertToDTO)
-                .toList();
-    }
-
     @Override
     public PetDTO addPet(PetDTO petDTO) {
-        log.info("Adding a new pet: {}", petDTO);
+        log.debug("Adding a new pet: {}", petDTO);
         validatePetDTO(petDTO);
         PetEntity pet = createPetEntity(petDTO);
         PetEntity savedPet = petRepository.save(pet);
@@ -43,16 +57,34 @@ public class PetServiceImpl implements PetService {
         return convertToDTO(savedPet);
     }
 
+    @Override
+    public PetDTO updatePet(String id, PetDTO petDTO) {
+        log.debug("Updating pet with ID: {}", id);
+        validatePetDTO(petDTO);
+
+        PetEntity existingPet = petRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new PetNotFoundException("Pet não encontrado com ID: " + id));
+
+        existingPet.setName(petDTO.getName());
+        existingPet.setBreed(petDTO.getBreed());
+        existingPet.setAge(petDTO.getAge());
+        existingPet.setAdditionalInfo(petDTO.getAdditionalInfo());
+
+        PetEntity updatedPet = petRepository.save(existingPet);
+        log.info("Pet updated successfully with ID: {}", updatedPet.getId());
+        return convertToDTO(updatedPet);
+    }
+
     private void validatePetDTO(PetDTO petDTO) {
         if (petDTO.getName() == null || petDTO.getName().isEmpty()) {
             log.error("Validation failed: Pet name is required.");
-            throw new IllegalArgumentException("O nome do pet é obrigatório.");
+            throw new PayloadValidationException("O nome do pet é obrigatório.");
         }
         if (petDTO.getBreed() == null || petDTO.getBreed().isEmpty()) {
             log.error("Validation failed: Pet breed is required.");
-            throw new IllegalArgumentException("A raça do pet é obrigatória.");
+            throw new PayloadValidationException("A raça do pet é obrigatória.");
         }
-        log.info("Validation passed for pet: {}", petDTO);
+        log.debug("Validation passed for pet: {}", petDTO);
     }
 
     private PetEntity createPetEntity(PetDTO petDTO) {
@@ -62,6 +94,12 @@ public class PetServiceImpl implements PetService {
                 .age(petDTO.getAge())
                 .additionalInfo(petDTO.getAdditionalInfo())
                 .build();
+    }
+
+    private List<PetDTO> convertToDTOs(List<PetEntity> petEntities) {
+        return petEntities.stream()
+                .map(this::convertToDTO)
+                .toList();
     }
 
     private PetDTO convertToDTO(PetEntity savedPet) {
