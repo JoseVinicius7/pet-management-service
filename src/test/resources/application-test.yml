@@ -1,0 +1,8 @@
+spring:
+    application:
+        name: pet-management-service
+    datasource:
+        url: jdbc:postgresql://localhost:5432/testdb
+        username: testuser
+        password: testpass
+        driver-class-name: org.postgresql.Driver
