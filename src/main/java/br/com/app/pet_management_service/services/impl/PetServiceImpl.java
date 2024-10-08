@@ -16,6 +16,7 @@ import java.util.UUID;
 @Service
 public class PetServiceImpl implements PetService {
 
+    public static final String PET_NAO_ENCONTRADO_COM_ID = "Pet não encontrado com ID: ";
     private final PetRepository petRepository;
 
     public PetServiceImpl(PetRepository petRepository) {
@@ -26,7 +27,7 @@ public class PetServiceImpl implements PetService {
     public void deletePet(String id) {
         log.debug("Deleting pet with ID: {}", id);
         PetEntity pet = petRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new PetNotFoundException("Pet não encontrado com ID: " + id));
+                .orElseThrow(() -> new PetNotFoundException(PET_NAO_ENCONTRADO_COM_ID + id));
         petRepository.delete(pet);
         log.info("Pet deleted successfully with ID: {}", id);
     }
@@ -35,7 +36,7 @@ public class PetServiceImpl implements PetService {
     public PetDTO getPetById(String id) {
         log.debug("Fetching pet with ID: {}", id);
         PetEntity pet = petRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new PetNotFoundException("Pet não encontrado com ID: " + id));
+                .orElseThrow(() -> new PetNotFoundException(PET_NAO_ENCONTRADO_COM_ID + id));
         return convertToDTO(pet);
     }
 
@@ -63,7 +64,7 @@ public class PetServiceImpl implements PetService {
         validatePetDTO(petDTO);
 
         PetEntity existingPet = petRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new PetNotFoundException("Pet não encontrado com ID: " + id));
+                .orElseThrow(() -> new PetNotFoundException(PET_NAO_ENCONTRADO_COM_ID + id));
 
         existingPet.setName(petDTO.getName());
         existingPet.setBreed(petDTO.getBreed());
